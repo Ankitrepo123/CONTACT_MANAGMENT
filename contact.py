@@ -12,7 +12,7 @@ screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 x = (screen_width/2) - (width/2)
 y = (screen_height/2) - (height/2)
-root.geometry("%dx%d+%d+%d" % (width, height, x, y))
+root.geometry("%dx%d+%d+%d" % (width,height,x,y))
 # root.resizable(0, 0)
 root.config(bg="#6666ff")
 
@@ -23,7 +23,7 @@ GENDER = StringVar()
 AGE = StringVar()
 ADDRESS = StringVar()
 CONTACT = StringVar()
-
+SEARCH = StringVar()
 
 
 #============================METHODS=====================================
@@ -38,6 +38,37 @@ def Database():
         tree.insert('', 'end', values=(data))
     cursor.close()
     conn.close()
+
+
+def searchrecord():
+    conn = sqlite3.connect("pythontut.db")
+    cursor = conn.cursor()
+    if SEARCH.get() == "":
+        tkMessageBox.showinfo("Warning", "Please enter first name in required search field !!") 
+    else:
+     tree.delete(*tree.get_children()) 
+     cursor= conn.execute("SELECT * FROM `member` WHERE FIRSTNAME LIKE (?) OR CONTACT LIKE (?)", ('%' + str(SEARCH.get()) + '%','%' + str(SEARCH.get()) + '%'))
+     fetch = cursor.fetchall()
+ 
+    for data in fetch:
+        tree.insert('', 'end', values=(data)) 
+    cursor.close()
+    conn.close()
+
+
+def displaydata():
+    conn = sqlite3.connect("pythontut.db")
+    cursor = conn.cursor()
+    tree.delete(*tree.get_children()) 
+    cursor=conn.execute("SELECT * FROM `member`") 
+    fetch = cursor.fetchall()
+    for data in fetch:
+        tree.insert('', 'end', values=(data))
+        #tree.bind("<Double-1>",OnDoubleClick)
+    cursor.close() 
+    conn.close()
+
+
 
 def SubmitData():
     if  FIRSTNAME.get() == "" or LASTNAME.get() == "" or GENDER.get() == "" or AGE.get() == "" or ADDRESS.get() == "" or CONTACT.get() == "":
@@ -146,7 +177,7 @@ def OnSelected(event):
     lbl_address.grid(row=4, sticky=W)
     lbl_contact = Label(ContactForm, text="Contact", font=('arial', 14), bd=5)
     lbl_contact.grid(row=5, sticky=W)
-
+    
     #===================ENTRY===============================
     firstname = Entry(ContactForm, textvariable=FIRSTNAME, font=('arial', 14),bd=3)
     firstname.grid(row=0, column=1)
@@ -278,13 +309,17 @@ lbl_title = Label(Top, text="Contact Management System", font=('arial', 16), wid
 lbl_title.pack(fill=X)
 
 #============================ENTRY=======================================
-
+lbl_search = Entry(Mid,textvariable=SEARCH,font=('arial', 10),bg='white', fg="black",bd=5)
+lbl_search.place(x=90,y=10)
 #============================BUTTONS=====================================
 btn_add = Button(MidLeft, text="+ ADD NEW", bg="#66ff66", command=AddNewWindow)
 btn_add.pack()
 btn_delete = Button(MidRight, text="DELETE", bg="red", command=DeleteData)
 btn_delete.pack(side=RIGHT)
-
+btn_search = Button(Mid,text='search',fg='black',font=('arial',10),command=searchrecord)
+btn_search.place(x=250,y=10)
+btn_view = Button(Mid, text="View All", command=displaydata,bg="cyan") 
+btn_view.place(x=310,y=10)
 #============================TABLES======================================
 scrollbarx = Scrollbar(TableMargin, orient=HORIZONTAL)
 scrollbary = Scrollbar(TableMargin, orient=VERTICAL)
